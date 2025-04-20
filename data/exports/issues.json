@@ -1,0 +1,202 @@
+[
+  {
+    "_id": "60f1e5b3e6b3f40012345678",
+    "id": "MDU6SXNzdWUxMjM0NTY3OA==",
+    "repo": "Yellow-Dog-Man/Resonite-Issues",
+    "number": 123,
+    "title": "VR コントローラーの追跡が不安定",
+    "body": "Oculus Quest 2 を使用していますが、コントローラーの追跡が不安定です。特に高速で動かした時に追跡が失われます。\n\n## 再現手順\n1. Oculus Quest 2 で Resonite を起動\n2. コントローラーを素早く動かす\n3. 追跡が失われる\n\n## 環境\n- Resonite バージョン: 1.2.3\n- デバイス: Oculus Quest 2\n- OS: Quest OS 12.0",
+    "author": "user123",
+    "created_at": "2023-07-15T10:30:00.000Z",
+    "updated_at": "2023-07-16T15:45:00.000Z",
+    "state": "open",
+    "comments": 3,
+    "comments_detail": [
+      {
+        "id": "MDEyOklzc3VlQ29tbWVudDEyMzQ1Njc4",
+        "author": "developer1",
+        "created_at": "2023-07-15T11:00:00.000Z",
+        "updated_at": "2023-07-15T11:00:00.000Z",
+        "body": "どのような動きをした時に発生しますか？特定のジェスチャーや動きのパターンはありますか？",
+        "reactions": {
+          "total": 2,
+          "+1": 2,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "replies": [],
+        "reply_count": 0
+      },
+      {
+        "id": "MDEyOklzc3VlQ29tbWVudDEyMzQ1Njc5",
+        "author": "user123",
+        "created_at": "2023-07-15T12:30:00.000Z",
+        "updated_at": "2023-07-15T12:30:00.000Z",
+        "body": "主に素早い円を描くような動きや、腕を振り回すような動きの時に発生します。特にVRでドラムを演奏しようとすると顕著です。",
+        "reactions": {
+          "total": 1,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 1,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "replies": [],
+        "reply_count": 0
+      },
+      {
+        "id": "MDEyOklzc3VlQ29tbWVudDEyMzQ1Njgw",
+        "author": "developer2",
+        "created_at": "2023-07-16T15:45:00.000Z",
+        "updated_at": "2023-07-16T15:45:00.000Z",
+        "body": "ありがとうございます。次のアップデートで修正予定です。トラッキング予測アルゴリズムを改善しました。",
+        "reactions": {
+          "total": 3,
+          "+1": 2,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 1,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "replies": [],
+        "reply_count": 0
+      }
+    ],
+    "total_replies": 0,
+    "reactions": {
+      "total": 5,
+      "+1": 3,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 2,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "participants": ["user123", "developer1", "developer2"],
+    "labels": ["bug", "vr", "controller"],
+    "issue_type": "bug",
+    "activity_score": 85,
+    "history": [
+      {
+        "date": "2023-07-16T15:45:00.000Z",
+        "comments": 3,
+        "replies": 0,
+        "reactions": {
+          "total": 5,
+          "+1": 3,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 2,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "activity_score": 85
+      }
+    ]
+  },
+  {
+    "_id": "60f1e5b3e6b3f40012345679",
+    "id": "MDU6SXNzdWUxMjM0NTY3OQ==",
+    "repo": "Yellow-Dog-Man/Resonite-Issues",
+    "number": 124,
+    "title": "アバターのカスタマイズオプションの追加要望",
+    "body": "現在のアバターカスタマイズオプションは素晴らしいですが、以下の追加機能があるとさらに良くなると思います：\n\n1. 髪の毛の物理シミュレーションの詳細設定\n2. 表情のブレンドシェイプのカスタマイズ\n3. 衣装の重ね着システム\n\nこれらの機能があれば、より個性的なアバターを作成できると思います。",
+    "author": "creator456",
+    "created_at": "2023-07-18T09:15:00.000Z",
+    "updated_at": "2023-07-19T14:20:00.000Z",
+    "state": "open",
+    "comments": 2,
+    "comments_detail": [
+      {
+        "id": "MDEyOklzc3VlQ29tbWVudDEyMzQ1NjgxA",
+        "author": "developer3",
+        "created_at": "2023-07-18T10:45:00.000Z",
+        "updated_at": "2023-07-18T10:45:00.000Z",
+        "body": "素晴らしい提案をありがとうございます。特に髪の物理シミュレーションの改善は現在のロードマップに含まれています。他の機能についても検討します。",
+        "reactions": {
+          "total": 4,
+          "+1": 3,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 1,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "replies": [],
+        "reply_count": 0
+      },
+      {
+        "id": "MDEyOklzc3VlQ29tbWVudDEyMzQ1NjgyA",
+        "author": "user789",
+        "created_at": "2023-07-19T14:20:00.000Z",
+        "updated_at": "2023-07-19T14:20:00.000Z",
+        "body": "衣装の重ね着システムに+1です。これがあれば季節に合わせた服装の調整が簡単にできるようになります。",
+        "reactions": {
+          "total": 5,
+          "+1": 4,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 1,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "replies": [],
+        "reply_count": 0
+      }
+    ],
+    "total_replies": 0,
+    "reactions": {
+      "total": 8,
+      "+1": 5,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 2,
+      "confused": 0,
+      "heart": 1,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "participants": ["creator456", "developer3", "user789"],
+    "labels": ["enhancement", "avatar", "customization"],
+    "issue_type": "feature",
+    "activity_score": 92,
+    "history": [
+      {
+        "date": "2023-07-19T14:20:00.000Z",
+        "comments": 2,
+        "replies": 0,
+        "reactions": {
+          "total": 8,
+          "+1": 5,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 2,
+          "confused": 0,
+          "heart": 1,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "activity_score": 92
+      }
+    ]
+  }
+]
