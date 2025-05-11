@@ -6,7 +6,7 @@ dotenv.config();
 
 export const config = {
   github: {
-    token: process.env.GITHUB_TOKEN || '',
+    token: process.env.GH_TOKEN || '',
     targetRepo: process.env.TARGET_REPO || 'Yellow-Dog-Man/Resonite-Issues',
   },
   mongodb: {
@@ -19,7 +19,7 @@ export const config = {
 // Validate required environment variables
 export function validateConfig(): boolean {
   if (!config.github.token) {
-    console.error('Error: GITHUB_TOKEN environment variable is required');
+    console.error('Error: GH_TOKEN environment variable is required');
     return false;
   }
   
