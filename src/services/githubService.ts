@@ -447,23 +447,42 @@ function isEnglish(text: string): boolean {
 // Save or update issue in the database
 export async function saveIssue(issueData: Partial<IIssue>): Promise<void> {
   try {
-    // If the issue is English, generate Japanese summary
+    // Check if issue already exists
+    const existingIssue = await Issue.findOne({ id: issueData.id });
+
+    // If the issue is English, generate Japanese summary only if content changed
+    let shouldCallOpenAI = false;
     if (
       issueData.title &&
       isEnglish(issueData.title + " " + (issueData.body || ""))
     ) {
-      const summary = await generateJapaneseSummary({
-        title: issueData.title,
-        body: issueData.body,
-        comments: (issueData.comments_detail || []).map((c: any) => ({
-          body: c.body,
-        })),
-      });
-      issueData.summary = summary;
-    }
+      if (existingIssue) {
+        // Compare title, body, and comments_detail
+        const isTitleSame = existingIssue.title === issueData.title;
+        const isBodySame = (existingIssue.body || "") === (issueData.body || "");
+        // Compare comments_detail (array of {body: string})
+        const oldComments = (existingIssue.comments_detail || []).map((c: any) => c.body).join("\n");
+        const newComments = (issueData.comments_detail || []).map((c: any) => c.body).join("\n");
+        const isCommentsSame = oldComments === newComments;
 
-    // Check if issue already exists
-    const existingIssue = await Issue.findOne({ id: issueData.id });
+        if (!(isTitleSame && isBodySame && isCommentsSame)) {
+          shouldCallOpenAI = true;
+        }
+      } else {
+        shouldCallOpenAI = true;
+      }
+
+      if (shouldCallOpenAI) {
+        const summary = await generateJapaneseSummary({
+          title: issueData.title,
+          body: issueData.body,
+          comments: (issueData.comments_detail || []).map((c: any) => ({
+            body: c.body,
+          })),
+        });
+        issueData.summary = summary;
+      }
+    }
 
     if (existingIssue) {
       // Update existing issue
