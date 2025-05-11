@@ -199,9 +199,31 @@ export function transformIssueData(
   participants.add(githubIssue.user.login);
   comments.forEach(comment => participants.add(comment.user.login));
   
-  // Calculate activity score
-  const activityScore = calculateActivityScore(githubIssue, comments);
-  
+  // Calculate total replies (仮: コメント数合計)
+  const totalReplies = commentsDetail.reduce((sum, c) => sum + (c.reply_count || 0), 0);
+
+  // 仮: reply_depth=1, reply_breadth=ユニーク返信者数, avg_reply_time=0
+  const replyDepth = 1;
+  const replyBreadth = 0;
+  const avgReplyTime = 0;
+
+  // 状態変更回数（open/closedの変化回数は現状0で仮実装）
+  const stateChangeCount = 0;
+
+  // engagement_metrics
+  const engagementMetrics = {
+    reply_depth: replyDepth,
+    reply_breadth: replyBreadth,
+    avg_reply_time: avgReplyTime
+  };
+
+  // Calculate activity score (spec 3.2対応)
+  const activityScore = calculateActivityScore(githubIssue, comments, {
+    totalReplies,
+    replyDepth,
+    stateChangeCount
+  });
+
   return {
     id: githubIssue.node_id,
     repo: `${owner}/${repo}`,
@@ -215,7 +237,7 @@ export function transformIssueData(
     state: githubIssue.state,
     comments: githubIssue.comments,
     comments_detail: commentsDetail,
-    total_replies: 0, // We don't have reply data yet
+    total_replies: totalReplies,
     reactions: {
       total: githubIssue.reactions.total_count,
       '+1': githubIssue.reactions['+1'],
@@ -231,10 +253,11 @@ export function transformIssueData(
     labels,
     issue_type: issueType,
     activity_score: activityScore,
+    engagement_metrics: engagementMetrics,
     history: [{
       date: new Date(),
       comments: githubIssue.comments,
-      replies: 0,
+      replies: totalReplies,
       reactions: {
         total: githubIssue.reactions.total_count,
         '+1': githubIssue.reactions['+1'],
@@ -291,31 +314,62 @@ function determineIssueType(labels: string[], title: string, body: string): stri
   return 'other';
 }
 
-// Calculate activity score based on issue data
-function calculateActivityScore(issue: GitHubIssue, comments: GitHubComment[]): number {
+/**
+ * Calculate activity score based on issue data and engagement metrics.
+ * - comments, replies, reactions, participants, state changes, reply depth, etc.
+ */
+function calculateActivityScore(
+  issue: GitHubIssue,
+  comments: GitHubComment[],
+  options?: {
+    totalReplies?: number;
+    replyDepth?: number;
+    stateChangeCount?: number;
+  }
+): number {
   // Base score from issue age (newer issues get higher score)
   const ageInDays = (Date.now() - new Date(issue.created_at).getTime()) / (1000 * 60 * 60 * 24);
-  const ageScore = Math.max(0, 100 - ageInDays); // Newer issues get higher score
-  
-  // Comment score (more comments = higher score)
+  const ageScore = Math.max(0, 100 - ageInDays);
+
+  // Comment score
   const commentScore = issue.comments * 5;
-  
-  // Reaction score (more reactions = higher score)
+
+  // Reaction score
   const reactionScore = issue.reactions.total_count * 3;
-  
-  // Participant score (more unique participants = higher score)
+
+  // Participant score
   const participants = new Set<string>();
   participants.add(issue.user.login);
   comments.forEach(comment => participants.add(comment.user.login));
   const participantScore = participants.size * 10;
-  
+
   // Recent activity bonus
   const lastUpdateDays = (Date.now() - new Date(issue.updated_at).getTime()) / (1000 * 60 * 60 * 24);
   const recentActivityBonus = lastUpdateDays < 7 ? 50 : (lastUpdateDays < 30 ? 25 : 0);
-  
+
+  // Replies score
+  const totalReplies = options?.totalReplies ?? 0;
+  const replyScore = totalReplies * 3;
+
+  // Reply depth score (会話の深さ)
+  const replyDepth = options?.replyDepth ?? 1;
+  const replyDepthScore = replyDepth * 10;
+
+  // State change score
+  const stateChangeCount = options?.stateChangeCount ?? 0;
+  const stateChangeScore = stateChangeCount * 10;
+
   // Calculate total score
-  const totalScore = ageScore + commentScore + reactionScore + participantScore + recentActivityBonus;
-  
+  const totalScore =
+    ageScore +
+    commentScore +
+    reactionScore +
+    participantScore +
+    recentActivityBonus +
+    replyScore +
+    replyDepthScore +
+    stateChangeScore;
+
   return Math.round(totalScore);
 }
 

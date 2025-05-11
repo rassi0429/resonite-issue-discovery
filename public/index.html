@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Issue JSON 検索ビューア</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Issue JSON 検索ビューア</h1>
+  <div>
+    <input type="file" id="jsonFileInput" accept=".json">
+    <input type="text" id="searchInput" placeholder="キーワード検索">
+    <button id="searchBtn">検索</button>
+    <label for="sortSelect" style="margin-left:1em;">並び替え:</label>
+    <select id="sortSelect">
+      <option value="default">デフォルト</option>
+      <option value="score">スコアが高い順</option>
+      <option value="recent">最近アクティブ順</option>
+      <option value="newest">新着順</option>
+      <option value="comments">コメント数が多い順</option>
+      <option value="open">未解決（open）優先</option>
+      <option value="priority">優先度スコア順</option>
+      <option value="participants">参加者数が多い順</option>
+    </select>
+  </div>
+  <div id="filters" style="margin:0.5em 0 1em 0;display:flex;flex-wrap:wrap;gap:1em;align-items:center;">
+    <label>状態:
+      <select id="stateFilter">
+        <option value="">すべて</option>
+        <option value="open">open</option>
+        <option value="closed">closed</option>
+      </select>
+    </label>
+    <label>タイプ:
+      <select id="typeFilter">
+        <option value="">すべて</option>
+        <option value="bug">bug</option>
+        <option value="feature">feature</option>
+        <option value="content">content</option>
+        <option value="other">other</option>
+      </select>
+    </label>
+    <label>スコア:
+      <input type="number" id="scoreMin" placeholder="最小" style="width:4em;">
+      ～
+      <input type="number" id="scoreMax" placeholder="最大" style="width:4em;">
+    </label>
+    <label>ラベル:
+      <input type="text" id="labelFilter" placeholder="カンマ区切り">
+    </label>
+  </div>
+  <div id="summary"></div>
+  <div id="results"></div>
+  <script src="main.js"></script>
+</body>
+</html>
