@@ -66,7 +66,7 @@ export interface IIssue extends Document {
   repo: string;
   number: number;
   title: string;
-  body: string;
+  body?: string;
   author: string;
   created_at: Date;
   updated_at: Date;
@@ -113,7 +113,7 @@ const CommentSchema = new Schema<Comment>({
   author: { type: String, required: true },
   created_at: { type: Date, required: true },
   updated_at: { type: Date, required: true },
-  body: { type: String, required: true },
+  body: { type: String, default: '' },
   reactions: { type: ReactionSchema, default: {} },
   replies: { type: [ReplySchema], default: [] },
   reply_count: { type: Number, default: 0 }
@@ -154,7 +154,7 @@ const IssueSchema = new Schema<IIssue>({
   repo: { type: String, required: true },
   number: { type: Number, required: true },
   title: { type: String, required: true },
-  body: { type: String, required: true },
+  body: { type: String, default: '' },
   author: { type: String, required: true },
   created_at: { type: Date, required: true },
   updated_at: { type: Date, required: true },

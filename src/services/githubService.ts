@@ -63,6 +63,27 @@ interface GitHubComment {
   };
 }
 
+// Check and handle GitHub API rate limits
+async function checkRateLimit(response: any): Promise<void> {
+  const rateLimit = response.headers['x-ratelimit-remaining'];
+  const rateLimitReset = response.headers['x-ratelimit-reset'];
+  
+  if (rateLimit && parseInt(rateLimit) < 10) {
+    console.log(`GitHub API rate limit is getting low: ${rateLimit} requests remaining`);
+    
+    if (parseInt(rateLimit) < 3) {
+      const resetTime = new Date(parseInt(rateLimitReset) * 1000);
+      const waitTime = Math.max(0, resetTime.getTime() - Date.now()) + 1000; // Add 1 second buffer
+      
+      if (waitTime > 0) {
+        console.log(`Rate limit almost reached. Waiting until reset at ${resetTime.toLocaleString()} (${Math.ceil(waitTime / 1000)} seconds)`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        console.log('Continuing after rate limit reset');
+      }
+    }
+  }
+}
+
 // Fetch issues from GitHub API
 export async function fetchIssues(page = 1, perPage = 100): Promise<GitHubIssue[]> {
   try {
@@ -75,9 +96,19 @@ export async function fetchIssues(page = 1, perPage = 100): Promise<GitHubIssue[
       sort: 'updated',
       direction: 'desc'
     });
+    
+    // Check rate limits
+    await checkRateLimit(response);
 
     return response.data as GitHubIssue[];
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status === 403 && error.message && error.message.includes('API rate limit exceeded')) {
+      console.log('Rate limit exceeded. Waiting for reset...');
+      // Wait for 60 seconds and try again
+      await new Promise(resolve => setTimeout(resolve, 60000));
+      return fetchIssues(page, perPage);
+    }
+    
     console.error('Error fetching issues from GitHub:', error);
     throw error;
   }
@@ -86,15 +117,45 @@ export async function fetchIssues(page = 1, perPage = 100): Promise<GitHubIssue[
 // Fetch comments for a specific issue
 export async function fetchComments(issueNumber: number): Promise<GitHubComment[]> {
   try {
-    const response = await octokit.issues.listComments({
-      owner,
-      repo,
-      issue_number: issueNumber,
-      per_page: 100
-    });
-
-    return response.data as GitHubComment[];
-  } catch (error) {
+    let allComments: GitHubComment[] = [];
+    let page = 1;
+    const perPage = 100;
+    let hasMoreComments = true;
+    
+    while (hasMoreComments) {
+      const response = await octokit.issues.listComments({
+        owner,
+        repo,
+        issue_number: issueNumber,
+        per_page: perPage,
+        page: page
+      });
+      
+      // Check rate limits
+      await checkRateLimit(response);
+      
+      const comments = response.data as GitHubComment[];
+      
+      if (comments.length === 0) {
+        hasMoreComments = false;
+      } else {
+        allComments = [...allComments, ...comments];
+        page++;
+        
+        // Add a small delay to avoid hitting GitHub API rate limits
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+    }
+    
+    return allComments;
+  } catch (error: any) {
+    if (error.status === 403 && error.message && error.message.includes('API rate limit exceeded')) {
+      console.log(`Rate limit exceeded while fetching comments for issue #${issueNumber}. Waiting for reset...`);
+      // Wait for 60 seconds and try again
+      await new Promise(resolve => setTimeout(resolve, 60000));
+      return fetchComments(issueNumber);
+    }
+    
     console.error(`Error fetching comments for issue #${issueNumber}:`, error);
     throw error;
   }
@@ -273,8 +334,16 @@ export async function saveIssue(issueData: Partial<IIssue>): Promise<void> {
       await Issue.create(issueData);
       console.log(`Created issue #${issueData.number}`);
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Error saving issue #${issueData.number}:`, error);
+    
+    // If it's a MongoDB connection error, wait and retry
+    if (error.name === 'MongoNetworkError' || error.message?.includes('connection')) {
+      console.log(`Database connection issue. Waiting 5 seconds before retrying...`);
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      return saveIssue(issueData);
+    }
+    
     throw error;
   }
 }

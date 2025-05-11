@@ -10,7 +10,9 @@ export const config = {
     targetRepo: process.env.TARGET_REPO || 'Yellow-Dog-Man/Resonite-Issues',
   },
   mongodb: {
-    uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/resonite-issue-discovery',
+    get uri() {
+      return process.env.MONGODB_URI || 'mongodb://localhost:27017/resonite-issue-discovery';
+    }
   }
 };
 

@@ -117,7 +117,7 @@ https://github.com/Yellow-Dog-Man/Resonite-Issues
   repo: String,            // リポジトリ名
   number: Number,          // Issue 番号
   title: String,           // タイトル
-  body: String,            // 本文
+  body?: String,           // 本文
   author: String,          // 作成者
   created_at: Date,        // 作成日時
   updated_at: Date,        // 更新日時
@@ -228,9 +228,9 @@ https://github.com/Yellow-Dog-Man/Resonite-Issues
 - アクティビティスコア計算ロジック実装
 - Issue タイプ分類機能の実装
 
-### 5.2 フェーズ 2: AI 機能拡張
+### 5.2 フェーズ 2: (AI) 機能拡張
 
-- ベクトル埋め込み生成
+- ベクトル埋め込み生成(まだやらない)
 - 要約機能実装
 - 検索機能実装
 - 関連 Issue 検出機能
