@@ -7,7 +7,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsc && node dist/index.js",
-    "update-issues": "node dist/index.js"
+    "update-issues": "node dist/index.js",
+    "translate": "npx ts-node scripts/add_summaries.ts"
   },
   "repository": {
     "type": "git",
@@ -24,7 +25,8 @@
     "@octokit/rest": "^21.1.1",
     "dotenv": "^16.5.0",
     "mongodb-memory-server": "^10.1.4",
-    "mongoose": "^8.13.2"
+    "mongoose": "^8.13.2",
+    "openai": "^4.98.0"
   },
   "devDependencies": {
     "@types/mongoose": "^5.11.96",

@@ -13,6 +13,9 @@ export const config = {
     get uri() {
       return process.env.MONGODB_URI || 'mongodb://localhost:27017/resonite-issue-discovery';
     }
+  },
+  openai: {
+    apiKey: process.env.OPENAI_API_KEY || ''
   }
 };
 

@@ -1,11 +1,71 @@
 import { Octokit } from '@octokit/rest';
 import { config } from '../config/config';
 import { Issue, IIssue } from '../models/Issue';
+import { OpenAI } from 'openai';
 
 // Create Octokit instance with GitHub token
 const octokit = new Octokit({
   auth: config.github.token
 });
+
+// Create OpenAI instance with API key
+const openai = new OpenAI({ apiKey: config.openai.apiKey });
+
+/**
+ * Generate Japanese summaries for an issue using OpenAI API.
+ * Returns { ja: { short, full, technical, general, generated_at } }
+ */
+export async function generateJapaneseSummary(issue: {
+  title: string;
+  body?: string;
+  comments?: { body: string }[];
+}): Promise<{
+  ja: {
+    short: string;
+    full: string;
+    technical: string;
+    general: string;
+    generated_at: Date;
+  };
+}> {
+  const baseText = `タイトル: ${issue.title}\n本文: ${issue.body || ''}\nコメント: ${(issue.comments || []).map(c => c.body).join('\n')}`;
+
+  // Prompts for each summary type
+  const prompts = {
+    short: `以下のGitHub Issue（英語）を日本語で10文字以内の短い見出しに要約してください。VR/AR専門用語は正確に訳し、一般ユーザーにも分かりやすく。:\n${baseText}`,
+    full: `以下のGitHub Issue（英語）を日本語で200文字以内の詳細な要約にしてください。VR/AR専門用語は正確に訳し、一般ユーザーにも分かりやすく。:\n${baseText}`,
+    technical: `以下のGitHub Issue（英語）を日本語で技術者向けに要点を簡潔にまとめてください。VR/AR専門用語は正確に訳し、技術的な詳細を重視してください。:\n${baseText}`,
+    general: `以下のGitHub Issue（英語）を日本語で一般ユーザー向けに分かりやすく要約してください。VR/AR専門用語は簡単な説明を添えてください。:\n${baseText}`
+  };
+
+  // Helper to call OpenAI
+  async function getSummary(prompt: string): Promise<string> {
+    const res = await openai.chat.completions.create({
+      model: "gpt-4.1-nano",
+      messages: [{ role: "system", content: "あなたは優秀な日本語の要約AIです。" }, { role: "user", content: prompt }],
+      max_tokens: 256,
+      temperature: 0.3
+    });
+    return res.choices[0]?.message?.content?.trim() || "";
+  }
+
+  const [short, full, technical, general] = await Promise.all([
+    getSummary(prompts.short),
+    getSummary(prompts.full),
+    getSummary(prompts.technical),
+    getSummary(prompts.general)
+  ]);
+
+  return {
+    ja: {
+      short,
+      full,
+      technical,
+      general,
+      generated_at: new Date()
+    }
+  };
+}
 
 // Parse owner and repo from the target repo string
 const [owner, repo] = config.github.targetRepo.split('/');
@@ -373,12 +433,38 @@ function calculateActivityScore(
   return Math.round(totalScore);
 }
 
+/**
+ * Detect if a string is mostly English (simple heuristic).
+ */
+function isEnglish(text: string): boolean {
+  if (!text) return false;
+  // Count English letters vs. non-ASCII
+  const en = (text.match(/[A-Za-z]/g) || []).length;
+  const non = (text.match(/[^\x00-\x7F]/g) || []).length;
+  return en > non;
+}
+
 // Save or update issue in the database
 export async function saveIssue(issueData: Partial<IIssue>): Promise<void> {
   try {
+    // If the issue is English, generate Japanese summary
+    if (
+      issueData.title &&
+      isEnglish(issueData.title + " " + (issueData.body || ""))
+    ) {
+      const summary = await generateJapaneseSummary({
+        title: issueData.title,
+        body: issueData.body,
+        comments: (issueData.comments_detail || []).map((c: any) => ({
+          body: c.body,
+        })),
+      });
+      issueData.summary = summary;
+    }
+
     // Check if issue already exists
     const existingIssue = await Issue.findOne({ id: issueData.id });
-    
+
     if (existingIssue) {
       // Update existing issue
       await Issue.updateOne({ id: issueData.id }, { $set: issueData });
@@ -390,14 +476,14 @@ export async function saveIssue(issueData: Partial<IIssue>): Promise<void> {
     }
   } catch (error: any) {
     console.error(`Error saving issue #${issueData.number}:`, error);
-    
+
     // If it's a MongoDB connection error, wait and retry
-    if (error.name === 'MongoNetworkError' || error.message?.includes('connection')) {
+    if (error.name === "MongoNetworkError" || error.message?.includes("connection")) {
       console.log(`Database connection issue. Waiting 5 seconds before retrying...`);
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 5000));
       return saveIssue(issueData);
     }
-    
+
     throw error;
   }
 }
