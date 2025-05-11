@@ -24,7 +24,7 @@ jobs:
       - run: npm run build
       - run: npm run update-issues
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           USE_LOCAL_MONGODB: 'false'
           TARGET_REPO: ${{ secrets.TARGET_REPO || 'Yellow-Dog-Man/Resonite-Issues' }}
