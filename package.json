@@ -23,7 +23,10 @@
   "homepage": "https://github.com/rassi0429/resonite-issue-discovery#readme",
   "dependencies": {
     "@octokit/rest": "^21.1.1",
+    "@types/express": "^5.0.1",
     "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "fastest-levenshtein": "^1.0.16",
     "mongodb-memory-server": "^10.1.4",
     "mongoose": "^8.13.2",
     "openai": "^4.98.0"
