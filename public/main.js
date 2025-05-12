@@ -30,9 +30,6 @@ document.getElementById('sortSelect').addEventListener('change', updateView);
 // ソート関数
 function sortIssues(list) {
   const sort = document.getElementById('sortSelect').value;
-  if (sort === 'score') {
-    return [...list].sort((a, b) => (b.activity_score || 0) - (a.activity_score || 0));
-  }
   if (sort === 'recent') {
     return [...list].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
   }
@@ -51,28 +48,12 @@ function sortIssues(list) {
       return a.state === 'open' ? -1 : 1;
     });
   }
-  if (sort === 'priority') {
-    // priority_score降順、なければactivity_score
-    return [...list].sort((a, b) => {
-      const pa = typeof a.priority_score === 'number' ? a.priority_score : (a.activity_score || 0);
-      const pb = typeof b.priority_score === 'number' ? b.priority_score : (b.activity_score || 0);
-      return pb - pa;
-    });
-  }
-  if (sort === 'participants') {
-    return [...list].sort((a, b) => ((b.participants?.length || 0) - (a.participants?.length || 0)));
-  }
   return list;
 }
 
 function filterIssues() {
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
   const state = document.getElementById('stateFilter').value;
-  const type = document.getElementById('typeFilter').value;
-  const scoreMin = parseInt(document.getElementById('scoreMin').value, 10);
-  const scoreMax = parseInt(document.getElementById('scoreMax').value, 10);
-  const labelStr = document.getElementById('labelFilter').value.trim().toLowerCase();
-  const labelArr = labelStr ? labelStr.split(',').map(s => s.trim()).filter(Boolean) : [];
 
   return issues.filter(issue => {
     // 検索キーワード
@@ -80,22 +61,12 @@ function filterIssues() {
       const hit =
         (issue.title && issue.title.toLowerCase().includes(q)) ||
         (issue.body && issue.body.toLowerCase().includes(q)) ||
-        (issue.labels && issue.labels.some(l => l.toLowerCase().includes(q))) ||
-        (issue.issue_type && issue.issue_type.toLowerCase().includes(q));
+        (issue.author && issue.author.toLowerCase().includes(q)) ||
+        (issue.repo && issue.repo.toLowerCase().includes(q));
       if (!hit) return false;
     }
     // 状態
     if (state && issue.state !== state) return false;
-    // タイプ
-    if (type && issue.issue_type !== type) return false;
-    // スコア範囲
-    if (!isNaN(scoreMin) && (issue.activity_score ?? -Infinity) < scoreMin) return false;
-    if (!isNaN(scoreMax) && (issue.activity_score ?? Infinity) > scoreMax) return false;
-    // ラベル
-    if (labelArr.length > 0) {
-      const labels = (issue.labels || []).map(l => l.toLowerCase());
-      if (!labelArr.every(lab => labels.includes(lab))) return false;
-    }
     return true;
   });
 }
@@ -106,23 +77,41 @@ function renderResults(list) {
     el.innerHTML = '<p>該当するIssueがありません</p>';
     return;
   }
-  el.innerHTML = list.map(issue => `
+  el.innerHTML = list.map(issue => {
+    // summary.ja の各フィールドを優先的に表示
+    let summaryBlock = '';
+    if (issue.summary && issue.summary.ja) {
+      const s = issue.summary.ja;
+      if (s.short) summaryBlock += `<div class="summary"><b>要約:</b> ${escapeHTML(s.short)}</div>`;
+      if (s.full) summaryBlock += `<div class="summary"><b>詳細:</b> ${escapeHTML(s.full)}</div>`;
+      if (s.technical) summaryBlock += `<div class="summary"><b>技術的:</b> ${escapeHTML(s.technical)}</div>`;
+      if (s.general) summaryBlock += `<div class="summary"><b>一般向け:</b> ${escapeHTML(s.general)}</div>`;
+    }
+    return `
     <div class="issue">
       <div>
         <span class="number">#${issue.number}</span>
         <span class="title">${escapeHTML(issue.title)}</span>
-        <span class="labels">${(issue.labels || []).map(l => `<span class="label">${escapeHTML(l)}</span>`).join(' ')}</span>
       </div>
+      ${summaryBlock}
       <div class="meta">
         <span>状態: ${issue.state}</span>
-        <span>タイプ: ${issue.issue_type}</span>
-        <span>スコア: ${issue.activity_score}</span>
+        <span>タイプ: ${escapeHTML(issue.issue_type)}</span>
+        <span>優先度: ${typeof issue.priority_score === "number" ? issue.priority_score : ""}</span>
+        <span>スコア: ${typeof issue.activity_score === "number" ? issue.activity_score : ""}</span>
         <span>作成者: ${escapeHTML(issue.author)}</span>
+        <span>参加者: ${Array.isArray(issue.participants) ? issue.participants.length : 0}</span>
+        <span>ラベル: ${(issue.labels || []).map(l => `<span class="label">${escapeHTML(l)}</span>`).join(' ')}</span>
+        <span>実装状況: ${escapeHTML(issue.implementation_status || "")}</span>
+        <span>作成日: ${escapeHTML(issue.created_at)}</span>
+        <span>更新日: ${escapeHTML(issue.updated_at)}</span>
         <span>コメント: ${issue.comments}</span>
+        <span>リアクション: 👍${issue.reactions?.["+1"] || 0} 👎${issue.reactions?.["-1"] || 0} 😄${issue.reactions?.laugh || 0}</span>
       </div>
       <div class="body">${escapeHTML(issue.body || '').slice(0, 200)}${issue.body && issue.body.length > 200 ? '…' : ''}</div>
     </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 function showSummary() {
