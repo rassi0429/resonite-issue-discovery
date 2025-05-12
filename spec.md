@@ -1,3 +1,16 @@
+# 現状実装済み機能（2025/5/12時点）
+
+- 指定したGitHubリポジトリ（デフォルト: Yellow-Dog-Man/Resonite-Issues）のIssueとコメントをGitHub REST APIで全件取得し、MongoDBに保存する。
+- MongoDBは外部URIまたはローカル（mongodb-memory-server）で動作可能。ローカルの場合はdata/mongodb-dataに永続化し、data/exports/配下でJSONエクスポート/インポートが可能。
+- Issue/コメント情報は独自のスキーマ（src/models/Issue.ts）で保存。ラベルや本文から自動でissue_type（bug/feature/content/other）を判定。
+- activity_score（コメント数・リアクション・参加者数・最近の更新等を加味したスコア）を自動計算。
+- 英語のIssueの場合のみ、OpenAI API（gpt-4.1-nano）で日本語要約（短い見出し/詳細/技術者向け/一般向け）を自動生成し、DBに保存。
+- 既存Issueと内容が変わった場合のみ要約を再生成。
+- 取得・保存処理はNode.jsスクリプト（src/index.ts）で一括実行。エラー時は自動リトライやレートリミット考慮あり。
+- MongoDBの接続・切断、ローカルDBの起動/エクスポート/インポートはユーティリティ関数で管理。
+
+---
+
 # GitHub Issue トラッカー 仕様書
 
 ## 1. 概要
