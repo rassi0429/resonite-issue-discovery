@@ -2,7 +2,6 @@ name: Update Issue Tracker DB
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # 6時間ごとに実行
   workflow_dispatch:  # 手動実行オプション
 
 jobs:
